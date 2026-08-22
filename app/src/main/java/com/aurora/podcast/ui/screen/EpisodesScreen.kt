@@ -23,13 +23,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.width
 import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.CompactChip
-import androidx.wear.compose.material.HorizontalDivider
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
-import androidx.wear.compose.material.IconButton // safe fallback: won't be used
 import com.aurora.podcast.data.db.DownloadStates
 import com.aurora.podcast.data.db.EpisodeEntity
 import com.aurora.podcast.ui.viewmodel.EpisodesViewModel
@@ -77,7 +76,7 @@ fun EpisodesScreen(
                     )
                     if (refreshing) {
                         androidx.wear.compose.material.CircularProgressIndicator(
-                            modifier = androidx.compose.foundation.layout.width(18.dp)
+                            modifier = Modifier.width(18.dp)
                         )
                     }
                 }
@@ -94,9 +93,6 @@ fun EpisodesScreen(
                 CompactChip(onClick = onOpenHistory, label = { Text("🕘 历史") })
                 CompactChip(onClick = onOpenSettings, label = { Text("⚙ 设置") })
             }
-
-            // ── 分割线 ──
-            HorizontalDivider()
 
             // ── 下载进度条 ──
             val downloading = episodes.filter { it.downloadState == DownloadStates.DOWNLOADING }
