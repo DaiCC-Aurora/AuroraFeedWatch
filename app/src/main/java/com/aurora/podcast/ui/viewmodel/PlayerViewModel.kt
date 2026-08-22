@@ -42,6 +42,8 @@ class PlayerViewModel(app: Application) : AndroidViewModel(app) {
 
     fun toggle() = player.togglePlayPause()
 
+    fun seekTo(ms: Long) = player.seekTo(ms)
+
     fun skipNext() = player.skipToNext()
 
     fun skipPrevious() = player.skipToPrevious()
