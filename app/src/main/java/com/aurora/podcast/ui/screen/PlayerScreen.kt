@@ -187,7 +187,7 @@ private fun SeekBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(6.dp)
-                .align(Alignment.CenterVertically)
+                .align(Alignment.Center)
                 .clip(RoundedCornerShape(3.dp))
                 .background(Color(0xFF3A3A3A))
         )
@@ -196,7 +196,7 @@ private fun SeekBar(
             modifier = Modifier
                 .fillMaxWidth(progress)
                 .height(6.dp)
-                .align(Alignment.CenterVertically)
+                .align(Alignment.Center)
                 .clip(RoundedCornerShape(3.dp))
                 .background(Color(0xFF81C784))
         )
