@@ -3,7 +3,7 @@ package com.aurora.podcast.ui.screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -12,10 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Chip
-import androidx.wear.compose.material.IconButton
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
+import androidx.wear.compose.material.Switch
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.ToggleChip
 import com.aurora.podcast.ui.viewmodel.SettingsViewModel
@@ -23,7 +24,7 @@ import com.aurora.podcast.ui.viewmodel.SettingsViewModel
 /**
  * 设置页：
  *  - 保留最近期数（步进调节，默认 10）
- *  - 仅 Wi-Fi 下载开关
+ *  - 仅 Wi-Fi 下载开关（ToggleChip + Switch）
  *  - 立即清理缓存
  */
 @Composable
@@ -52,11 +53,17 @@ fun SettingsScreen(onBack: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { vm.setKeepEpisodes(settings.keepEpisodes - 1) }) {
+                    Button(
+                        onClick = { vm.setKeepEpisodes(settings.keepEpisodes - 1) },
+                        modifier = Modifier.size(40.dp)
+                    ) {
                         Text("−")
                     }
                     Text("${settings.keepEpisodes}", style = MaterialTheme.typography.body1)
-                    IconButton(onClick = { vm.setKeepEpisodes(settings.keepEpisodes + 1) }) {
+                    Button(
+                        onClick = { vm.setKeepEpisodes(settings.keepEpisodes + 1) },
+                        modifier = Modifier.size(40.dp)
+                    ) {
                         Text("＋")
                     }
                 }
@@ -65,7 +72,10 @@ fun SettingsScreen(onBack: () -> Unit) {
                 ToggleChip(
                     checked = settings.wifiOnly,
                     onCheckedChange = { vm.setWifiOnly(it) },
-                    label = { Text("仅 Wi-Fi 下载") }
+                    label = { Text("仅 Wi-Fi 下载") },
+                    toggleControl = {
+                        Switch(checked = settings.wifiOnly, onCheckedChange = null)
+                    }
                 )
             }
             item {

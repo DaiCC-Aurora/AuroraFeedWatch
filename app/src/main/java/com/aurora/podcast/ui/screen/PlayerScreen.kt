@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -17,7 +18,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.wear.compose.material.IconButton
+import androidx.wear.compose.material.Button
+import androidx.wear.compose.material.CompactChip
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
@@ -25,7 +27,7 @@ import com.aurora.podcast.ui.viewmodel.PlayerViewModel
 
 /**
  * 播放页：标题 + 当前字幕行（随进度自动切换，即"高亮当前行"）+ 播放控制。
- * 返回按钮在左上（‹）。
+ * 返回按钮在顶部（CompactChip），底部为 上一首 / 播放暂停 / 下一首 圆形按钮。
  */
 @Composable
 fun PlayerScreen(
@@ -51,9 +53,11 @@ fun PlayerScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            IconButton(onClick = onBack, modifier = Modifier.align(Alignment.Start)) {
-                Text("‹ 返回")
-            }
+            CompactChip(
+                onClick = onBack,
+                modifier = Modifier.align(Alignment.Start),
+                label = { Text("‹ 返回") }
+            )
             Text(
                 text = episode?.title ?: "选择一期节目",
                 style = MaterialTheme.typography.title3,
@@ -71,7 +75,7 @@ fun PlayerScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(90.dp)
+                    .height(72.dp)
                     .padding(horizontal = 8.dp)
             )
             Text(
@@ -85,9 +89,24 @@ fun PlayerScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { vm.skipPrevious() }) { Text("◀◀") }
-                IconButton(onClick = { vm.toggle() }) { Text(if (isPlaying) "❚❚" else "▶") }
-                IconButton(onClick = { vm.skipNext() }) { Text("▶▶") }
+                Button(
+                    onClick = { vm.skipPrevious() },
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    Text("◀◀")
+                }
+                Button(
+                    onClick = { vm.toggle() },
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Text(if (isPlaying) "❚❚" else "▶")
+                }
+                Button(
+                    onClick = { vm.skipNext() },
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    Text("▶▶")
+                }
             }
         }
     }
