@@ -29,6 +29,7 @@ import androidx.wear.compose.material.CompactChip
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
+import com.aurora.podcast.BuildConfig
 import com.aurora.podcast.data.db.DownloadStates
 import com.aurora.podcast.data.db.EpisodeEntity
 import com.aurora.podcast.ui.viewmodel.EpisodesViewModel
@@ -56,7 +57,8 @@ fun EpisodesScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 10.dp)
+                // 顶部留出 wear Scaffold 时间浮层（TimeText）的高度，避免标题/按钮被遮挡
+                .padding(start = 10.dp, end = 10.dp, top = 32.dp)
         ) {
             // ── 标题行 ──
             Row(
@@ -64,7 +66,7 @@ fun EpisodesScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("英语听力", style = MaterialTheme.typography.title3)
+                Text("英语听力 ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.title3)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
