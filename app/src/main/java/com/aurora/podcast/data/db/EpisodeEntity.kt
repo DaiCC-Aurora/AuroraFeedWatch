@@ -21,5 +21,15 @@ data class EpisodeEntity(
     val remoteAudioUrl: String,            // 云端音频 URL
     val remoteSubtitleUrl: String?,        // 云端字幕 URL
     val isDownloaded: Boolean = false,
-    val transcript: String? = null         // 纯文本备用字幕
+    val transcript: String? = null,        // 纯文本备用字幕
+    val downloadState: Int = DownloadStates.NOT_STARTED, // 0 未开始 1 下载中 2 已完成 3 失败
+    val downloadProgress: Float = 0f       // 下载进度 0f~1f（仅下载中有意义）
 )
+
+/** 下载状态常量。 */
+object DownloadStates {
+    const val NOT_STARTED = 0
+    const val DOWNLOADING = 1
+    const val COMPLETED = 2
+    const val FAILED = 3
+}

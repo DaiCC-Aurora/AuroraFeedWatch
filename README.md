@@ -16,19 +16,19 @@ podcast-watch/
 │       ├── res/                    # 字符串、矢量图标（通知按钮）
 │       └── java/com/aurora/podcast/
 │           ├── PodcastApplication.kt      # 单例仓库/播放器 + 启动调度
-│           ├── MainActivity.kt            # 极简三屏导航 + MediaBrowser 连接
+│           ├── MainActivity.kt            # 四屏导航（列表/播放/缓存/历史/设置）+ MediaBrowser 连接
 │           ├── data/
-│           │   ├── db/                    # EpisodeEntity / EpisodeDao / AppDatabase (Room)
+│           │   ├── db/                    # EpisodeEntity / EpisodeDao / HistoryEntity / HistoryDao / AppDatabase (Room v2)
 │           │   ├── network/               # ApiService / Dtos / NetworkModule (Retrofit)
 │           │   ├── settings/              # DataStore 设置（保留期数、仅 Wi-Fi）
 │           │   ├── model/                 # SubtitleCue / SubtitleParser (VTT/LRC/纯文本)
-│           │   └── repository/PodcastRepository.kt  # 云端同步 + 下载状态 + 清理
-│           ├── work/                      # DownloadWorker / CleanupWorker / Scheduler / FileDownloader
-│           ├── playback/                  # PlayerManager (ExoPlayer) / PlaybackService (MediaBrowserService)
+│           │   └── repository/PodcastRepository.kt  # 云端同步 + 下载状态 + 播放历史 + 清理
+│           ├── work/                      # DownloadWorker / CleanupWorker / Scheduler / FileDownloader（带进度回调）
+│           ├── playback/                  # PlayerManager (ExoPlayer，含历史写入) / PlaybackService (MediaBrowserService)
 │           └── ui/
 │               ├── theme/Theme.kt
-│               ├── screen/                # 节目列表 / 播放页 / 设置页
-│               └── viewmodel/             # Episodes / Player / Settings ViewModel
+│               ├── screen/                # 节目列表 / 播放页 / 缓存列表 / 历史记录 / 设置页
+│               └── viewmodel/             # Episodes / Player / Settings / History ViewModel
 ```
 
 ## 一、构建（Android Studio）
@@ -45,12 +45,18 @@ podcast-watch/
 ## 二、使用流程
 
 1. 打开应用 → 自动从云端拉取节目列表（列表顶部显示下载状态）。
-2. 点击"未下载"节目 → 加入下载队列（Worker 在 Wi-Fi + 充电时执行，满足后自动下载音频+字幕）。
+2. 点击"未下载"节目 → 加入下载队列：
+   - **列表顶部会实时出现进度条**（绿色横条 + 百分比），直到下载完成自动消失。
+   - 下载完成后，列表顶部弹出"✓ 下载完成：xxx"消息（10 秒后自动消失），该行状态变成 ▶。
+   - 下载失败时显示"✗ 下载失败：xxx，点按重试"，用户点按该行重试。
 3. 点击"已下载"节目 → 进入播放页：
    - 中部字幕区随播放进度自动切换当前行（高亮当前句）。
    - 底部 ◀◀ / ▶❚❚ / ▶▶ 控制上一首、播放/暂停、下一首。
 4. 长按表冠/侧键呼出系统"正在播放"卡片 → 可播放/暂停、上一首/下一首（MediaSession）。
-5. 设置页：离线保留期数（默认 10）、仅 Wi-Fi 下载开关、立即清理缓存。
+5. **列表底部三个快捷入口**：
+   - **☰ 缓存列表**：查看本地已下载的节目、每期文件大小、点按播放；支持"清空缓存"。
+   - **🕘 历史记录**：查看最近播放过的节目、点按再次播放；显示"已播 X%"进度或"已播完"。
+   - **⚙ 设置**：离线保留期数（默认 10）、仅 Wi-Fi 下载开关、立即清理缓存。
 6. 无网络时：列表只展示已下载节目并正常本地播放（含字幕）。
 
 ## 三、关键实现说明
@@ -64,6 +70,9 @@ podcast-watch/
 | ExoPlayer 本地播放 + 字幕解析（VTT/LRC/纯文本） | `playback/PlayerManager.kt` + `data/model/SubtitleParser.kt` |
 | MediaBrowserService + MediaSession + PlaybackStateCompat | `playback/PlaybackService.kt` |
 | ScalingLazyColumn 列表 / 播放页 / 设置页 | `ui/screen/*.kt` |
+| 下载进度条 + 完成/失败反馈 | `work/FileDownloader.kt`（回调）+ `work/DownloadWorker.kt`（节流写 DB）+ `ui/screen/EpisodesScreen.kt`（顶部进度行 + 状态图标） |
+| 播放历史表 + 最近 50 条 + 首次/最近进度 | `data/db/HistoryEntity.kt` + `data/db/HistoryDao.kt` + `playback/PlayerManager.kt`（开始/暂停/结束写）|
+| 缓存列表 + 文件大小 + 清空 | `ui/screen/CacheScreen.kt` + `data/repository/PodcastRepository.kt`（clearAllCached）|
 
 > 说明：规格给出的 ExoPlayer 2.19.1 对应现维护的 **Media3 ExoPlayer 1.4.1**（androidx.media3），API 更现代、兼容 targetSdk 34；已按等价替换，功能不受影响。
 

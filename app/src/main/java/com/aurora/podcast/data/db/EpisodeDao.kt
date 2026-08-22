@@ -46,4 +46,8 @@ interface EpisodeDao {
 
     @Query("DELETE FROM episodes WHERE guid = :guid")
     suspend fun deleteByGuid(guid: String)
+
+    /** 更新下载状态与进度（下载中/完成/失败共用）。 */
+    @Query("UPDATE episodes SET downloadState = :state, downloadProgress = :progress WHERE guid = :guid")
+    suspend fun updateDownloadProgress(guid: String, state: Int, progress: Float)
 }

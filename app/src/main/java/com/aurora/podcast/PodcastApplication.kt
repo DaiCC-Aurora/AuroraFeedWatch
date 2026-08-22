@@ -30,7 +30,7 @@ class PodcastApplication : Application() {
         database = AppDatabase.getInstance(this)
         settingsRepository = SettingsRepository(this)
         repository = PodcastRepository(this)
-        playerManager = PlayerManager(this)
+        playerManager = PlayerManager(this, repository)
 
         appScope.launch {
             runCatching { repository.reconcileLocalFiles() }

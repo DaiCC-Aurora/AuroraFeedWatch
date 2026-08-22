@@ -6,13 +6,15 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [EpisodeEntity::class],
-    version = 1,
+    entities = [EpisodeEntity::class, HistoryEntity::class],
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun episodeDao(): EpisodeDao
+
+    abstract fun historyDao(): HistoryDao
 
     companion object {
         @Volatile
@@ -24,7 +26,11 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "podcast.db"
-                ).build().also { instance = it }
+                )
+                    // v2 变更：episodes 增加下载进度字段 + 新增 history 表。
+                    // 本地数据均可从云端重新拉取，旧库直接重建最稳妥。
+                    .fallbackToDestructiveMigration()
+                    .build().also { instance = it }
             }
         }
     }

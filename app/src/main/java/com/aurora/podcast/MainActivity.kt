@@ -15,7 +15,9 @@ import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.aurora.podcast.playback.PlaybackService
+import com.aurora.podcast.ui.screen.CacheScreen
 import com.aurora.podcast.ui.screen.EpisodesScreen
+import com.aurora.podcast.ui.screen.HistoryScreen
 import com.aurora.podcast.ui.screen.PlayerScreen
 import com.aurora.podcast.ui.screen.SettingsScreen
 import com.aurora.podcast.ui.theme.PodcastTheme
@@ -40,11 +42,27 @@ class MainActivity : ComponentActivity() {
                         onBack = { screen = "episodes" }
                     )
                     "settings" -> SettingsScreen(onBack = { screen = "episodes" })
+                    "cache" -> CacheScreen(
+                        onBack = { screen = "episodes" },
+                        onPlay = { guid ->
+                            currentGuid = guid
+                            screen = "player"
+                        }
+                    )
+                    "history" -> HistoryScreen(
+                        onBack = { screen = "episodes" },
+                        onPlay = { guid ->
+                            currentGuid = guid
+                            screen = "player"
+                        }
+                    )
                     else -> EpisodesScreen(
                         onOpenPlayer = { guid ->
                             currentGuid = guid
                             screen = "player"
                         },
+                        onOpenCache = { screen = "cache" },
+                        onOpenHistory = { screen = "history" },
                         onOpenSettings = { screen = "settings" }
                     )
                 }

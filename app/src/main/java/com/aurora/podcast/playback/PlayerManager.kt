@@ -8,8 +8,10 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.aurora.podcast.data.db.AppDatabase
 import com.aurora.podcast.data.db.EpisodeEntity
 import com.aurora.podcast.data.model.SubtitleCue
+import com.aurora.podcast.data.repository.PodcastRepository
 import com.aurora.podcast.data.model.SubtitleParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,13 +29,18 @@ import java.io.File
  * 播放核心：封装 Media3 ExoPlayer + 字幕装载 + 播放队列（下一首/上一首）。
  * 由 Application 持有单例，PlaybackService 与 UI 共享同一实例。
  */
-class PlayerManager(private val context: Context) {
+class PlayerManager(
+    private val context: Context,
+    private val repository: PodcastRepository
+) {
 
     private var exoPlayer: ExoPlayer? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var positionJob: Job? = null
     private var queue: List<EpisodeEntity> = emptyList()
     private var current: EpisodeEntity? = null
+    private val historyDao = AppDatabase.getInstance(context).historyDao()
+    private var lastHistoryWriteAt = 0L
 
     private val _positionMs = MutableStateFlow(0L)
     val positionMs: StateFlow<Long> = _positionMs.asStateFlow()
@@ -55,13 +62,29 @@ class PlayerManager(private val context: Context) {
     private val playerListener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             _isPlaying.value = isPlaying
+            if (!isPlaying) writeHistoryProgress(completed = false)
             onPlaybackStateChanged?.invoke(isPlaying)
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_ENDED) {
+                writeHistoryProgress(completed = true)
                 onPlaybackEnded?.invoke()
             }
+        }
+    }
+
+    /** 把当前进度（completed=true 时写满）写入播放历史。 */
+    private fun writeHistoryProgress(completed: Boolean) {
+        val c = current ?: return
+        val p = exoPlayer
+        // 播放已结束时不重复写"暂停"进度
+        if (!completed && p != null && p.playbackState == Player.STATE_ENDED) return
+        val total = if (p != null && p.duration > 0) p.duration else 0L
+        val pos = if (completed) total else (p?.currentPosition ?: 0L)
+        val now = System.currentTimeMillis()
+        scope.launch {
+            runCatching { historyDao.upsert(c.guid, c.title, now, pos, total, completed) }
         }
     }
 
@@ -88,6 +111,17 @@ class PlayerManager(private val context: Context) {
 
         onEpisodeChanged?.invoke(episode)
         startPositionPolling()
+
+        // 记录播放历史（已存在则保留首次播放时间）
+        val now = System.currentTimeMillis()
+        scope.launch {
+            runCatching {
+                historyDao.upsert(
+                    episode.guid, episode.title, now, 0L,
+                    episode.durationSeconds * 1000L, false
+                )
+            }
+        }
     }
 
     fun togglePlayPause() {
@@ -151,7 +185,25 @@ class PlayerManager(private val context: Context) {
         positionJob?.cancel()
         positionJob = scope.launch {
             while (isActive) {
-                _positionMs.value = exoPlayer?.currentPosition ?: 0L
+                val pos = exoPlayer?.currentPosition ?: 0L
+                _positionMs.value = pos
+                // 播放中每 5 秒持久化一次播放进度（历史页"看到哪了"）
+                if (_isPlaying.value) {
+                    val now = System.currentTimeMillis()
+                    if (now - lastHistoryWriteAt >= 5000L) {
+                        lastHistoryWriteAt = now
+                        val c = current
+                        if (c != null) {
+                            val p = exoPlayer
+                            val total = if (p != null && p.duration > 0) p.duration else 0L
+                            scope.launch {
+                                runCatching {
+                                    historyDao.upsert(c.guid, c.title, now, pos, total, false)
+                                }
+                            }
+                        }
+                    }
+                }
                 delay(250)
             }
         }
