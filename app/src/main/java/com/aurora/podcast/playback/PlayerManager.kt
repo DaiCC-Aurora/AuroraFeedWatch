@@ -223,8 +223,8 @@ class PlayerManager(
         if (!path.isNullOrBlank()) {
             val f = File(path)
             if (f.exists()) {
-                return try {
-                    SubtitleParser.parse(f.readText(), episode.durationSeconds)
+                try {
+                    return SubtitleParser.parse(f.readText(), episode.durationSeconds)
                 } catch (e: Exception) {
                     Log.w(TAG, "字幕文件解析失败，回退 transcript: ${e.message}")
                 }
