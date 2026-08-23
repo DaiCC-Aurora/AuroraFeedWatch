@@ -209,7 +209,16 @@ class PlayerManager(
         }
     }
 
+    /**
+     * 装载字幕，优先级：
+     *  1) 云端带时间戳的 VTT 字幕（subtitleVtt，歌词式实时字幕）
+     *  2) 本地字幕文件（.vtt）
+     *  3) 纯文本 transcript 兜底（无时间轴，按句均分，仅作应急）
+     */
     private fun loadSubtitles(episode: EpisodeEntity): List<SubtitleCue> {
+        if (!episode.subtitleVtt.isNullOrBlank()) {
+            return SubtitleParser.parse(episode.subtitleVtt, episode.durationSeconds)
+        }
         val path = episode.subtitleLocalPath
         if (!path.isNullOrBlank()) {
             val f = File(path)
@@ -218,7 +227,6 @@ class PlayerManager(
                     SubtitleParser.parse(f.readText(), episode.durationSeconds)
                 } catch (e: Exception) {
                     Log.w(TAG, "字幕文件解析失败，回退 transcript: ${e.message}")
-                    SubtitleParser.parse(episode.transcript, episode.durationSeconds)
                 }
             }
         }

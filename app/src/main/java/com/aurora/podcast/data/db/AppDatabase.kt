@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [EpisodeEntity::class, HistoryEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -28,6 +28,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "podcast.db"
                 )
                     // v2 变更：episodes 增加下载进度字段 + 新增 history 表。
+                    // v3 变更：episodes 增加 subtitleVtt 字段（云端实时 VTT 字幕）。
                     // 本地数据均可从云端重新拉取，旧库直接重建最稳妥。
                     .fallbackToDestructiveMigration()
                     .build().also { instance = it }

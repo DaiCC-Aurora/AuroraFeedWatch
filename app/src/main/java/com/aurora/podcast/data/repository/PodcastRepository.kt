@@ -73,6 +73,7 @@ class PodcastRepository(context: Context) {
                 remoteSubtitleUrl = dto.subtitleUrl,
                 isDownloaded = audioExists,
                 transcript = dto.transcript ?: old?.transcript,
+                subtitleVtt = dto.subtitleVtt ?: old?.subtitleVtt,
                 downloadState = when {
                     audioExists -> DownloadStates.COMPLETED
                     old != null -> old.downloadState

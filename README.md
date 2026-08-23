@@ -67,7 +67,7 @@ podcast-watch/
 | Retrofit 拉取 Feed | `data/network/ApiService.kt`（GET /api/feed?limit=50） |
 | 下载 Worker：充电 + 仅 Wi-Fi + OkHttp 断点续传 | `work/DownloadWorker.kt` + `work/FileDownloader.kt` |
 | 清理 Worker：每日 03:00，保留最近 N 期、跳过当前播放 | `work/CleanupWorker.kt` + `work/Scheduler.kt` |
-| ExoPlayer 本地播放 + 字幕解析（VTT/LRC/纯文本） | `playback/PlayerManager.kt` + `data/model/SubtitleParser.kt` |
+| ExoPlayer 本地播放 + 歌词式实时字幕（云端 Whisper 生成的 VTT 时间轴，随进度逐行高亮） | `playback/PlayerManager.kt` + `data/model/SubtitleParser.kt` |
 | MediaBrowserService + MediaSession + PlaybackStateCompat | `playback/PlaybackService.kt` |
 | ScalingLazyColumn 列表 / 播放页 / 设置页 | `ui/screen/*.kt` |
 | 下载进度条 + 完成/失败反馈 | `work/FileDownloader.kt`（回调）+ `work/DownloadWorker.kt`（节流写 DB）+ `ui/screen/EpisodesScreen.kt`（顶部进度行 + 状态图标） |

@@ -23,6 +23,7 @@ data class FeedItemDto(
     @SerializedName("pub_date") val pubDate: String?,
     @SerializedName("audio_url") val audioUrl: String?,
     @SerializedName("subtitle_url") val subtitleUrl: String?,
+    @SerializedName("subtitle_vtt") val subtitleVtt: String?,
     @SerializedName("duration_seconds") val durationSeconds: Int?,
     @SerializedName("transcript") val transcript: String?
 )
